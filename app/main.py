@@ -27,6 +27,9 @@ class Proc(Thread):
                     date_st.day, date_st.month, date_st.year, date_st.hour, date_st.minute, date_st.second,\
                     date_end.day, date_end.month, date_end.year, date_end.hour, date_end.minute, date_end.second))
                 f.close()
+                f = open("work_time.txt", 'w')
+                f.write(str(self.end_time - self.start_time))
+                f.close()
                 break
 
 class ProcRun:
@@ -85,9 +88,14 @@ def proc_manager(command):
 def get_status():
     output = ""
     if(cust_process.is_alive()):
-        output = "status: working"
+        output = "status: working\n"
     else:
-        output = "status: not working"
+        output = "status: not working\n"
+    if(os.path.exists("work_time.txt")):
+        f = open("work_time.txt", 'r')
+        output += "Last working time: " + f.read() + " sec"
+    else:
+        output += "Last working time: 404 Not Found"
     return get_response(output, "Proc info")
     
 @app.get("/api/time_counter/result", tags=["Result"])
