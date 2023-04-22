@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 import time
 import datetime
 from tzlocal import get_localzone
@@ -44,28 +45,57 @@ class ProcRun:
         return self.proc.is_alive()
 
 
-app = FastAPI(docs_url="/api/docs")
+def get_response(response, title):
+    output = "<html>\
+                 <head>\
+                     <title>" + title + "</title>\
+                 </head>\
+                 <body>" + response + "</body>\
+             </html>"
+    return HTMLResponse(output)
+
+app_description = "Run process and see it's working time"
+
+tags_metadata = [
+    {
+        "name": "Proc info",
+        "description": "Get proc info",
+    },
+    {
+        "name": "Result",
+        "description": "Get result of proc",
+    },
+    {
+        "name": "Proc manager",
+        "description": "Manage proc (type **start** - to start proc; type **stop** - to stop proc)",
+    }
+]
+
+app = FastAPI(docs_url="/api/docs", title = "Time Counter API", description=app_description, openapi_tags=tags_metadata)
 cust_process = ProcRun()
 
-@app.post("/api/time_counter")
+@app.post("/api/time_counter", tags=["Proc manager"])
 def proc_manager(command):
     if(command == "start" and not cust_process.is_alive()):
         cust_process.start()
     elif(command == "stop" and cust_process.is_alive()):
         cust_process.stop()
 
-@app.get("/api/time_counter")
+@app.get("/api/time_counter", response_class=HTMLResponse, tags=["Proc info"])
 def get_status():
+    output = ""
     if(cust_process.is_alive()):
-        return {"status": "working"}
+        output = "status: working"
     else:
-        return {"status": "not working"}
+        output = "status: not working"
+    return get_response(output, "Proc info")
     
-@app.get("/api/time_counter/result")
+@app.get("/api/time_counter/result", tags=["Result"])
 def get_result():
     if(not os.path.exists("res.txt")):
-        return {"result": "404 Not Found"}
+        return get_response("Result: 404 Not Found", "Result")
     else:
         f = open("res.txt", "r")
         output = f.read()
-        return {"result": output}
+        f.close()
+        return get_response("Result: " + output, "Result")
