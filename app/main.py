@@ -6,7 +6,7 @@ from tzlocal import get_localzone
 import os
 from threading import Thread, Event
 
-class Proc(Thread):
+class Proc(Thread):  #process class
     def __init__(self):
         super().__init__()
         self.start_time = time.time()
@@ -32,7 +32,7 @@ class Proc(Thread):
                 f.close()
                 break
 
-class ProcRun:
+class ProcRun:   #class to run process
     def __init__(self):
         self.proc = Proc()
 
@@ -48,7 +48,7 @@ class ProcRun:
         return self.proc.is_alive()
 
 
-def get_response(response, title):
+def get_response(response, title): #function to formulate html response
     output = "<html>\
                  <head>\
                      <title>" + title + "</title>\
@@ -72,12 +72,12 @@ tags_metadata = [
         "name": "Proc manager",
         "description": "Manage proc (type **start** - to start proc; type **stop** - to stop proc)",
     }
-]
+] #tags for description in docs
 
-app = FastAPI(docs_url="/api/docs", title = "Time Counter API", description=app_description, openapi_tags=tags_metadata)
-cust_process = ProcRun()
+app = FastAPI(docs_url="/api/docs", title = "Time Counter API", description=app_description, openapi_tags=tags_metadata) #FastPAI initialization
+cust_process = ProcRun() #process initialization
 
-@app.post("/api/time_counter", tags=["Proc manager"])
+@app.post("/api/time_counter", tags=["Proc manager"]) 
 def proc_manager(command):
     if(command == "start" and not cust_process.is_alive()):
         cust_process.start()
